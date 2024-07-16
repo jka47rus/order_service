@@ -1,6 +1,7 @@
 package com.example.order_service.configuration;
 
 import com.example.order_service.model.Order;
+import com.example.order_service.model.OrderEvent;
 import com.example.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class OrderListener {
     @KafkaListener(topics = "${app.kafka.orderTopic}",
             groupId = "$(app.kafka.orderGroupId)",
             containerFactory = "orderConcurrentKafkaListenerContainerFactory")
-    public void listen(@Payload Order order,
+    public void listen(@Payload OrderEvent order,
                        @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
                        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
                        @Header(KafkaHeaders.RECEIVED_PARTITION) Integer partition,
