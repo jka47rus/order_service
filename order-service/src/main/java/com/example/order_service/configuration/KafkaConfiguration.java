@@ -1,6 +1,5 @@
 package com.example.order_service.configuration;
 
-import com.example.order_service.model.Order;
 import com.example.order_service.model.OrderEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

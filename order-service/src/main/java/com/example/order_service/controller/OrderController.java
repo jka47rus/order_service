@@ -28,7 +28,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<String> sendRequest(@RequestBody Order order) {
         kafkaTemplate.send(topicName, orderMapper.orderToOrderEvent(order));
-        return ResponseEntity.ok("Message sent to kafka");
+        return ResponseEntity.ok("Message was sent to kafka");
     }
 
     @GetMapping("/{name}")

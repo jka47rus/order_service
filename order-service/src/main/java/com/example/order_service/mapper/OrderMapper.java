@@ -18,7 +18,6 @@ public class OrderMapper {
                 .build();
     }
 
-
     public List<OrderEvent> ordersToOrderEventList(List<Order> orders) {
         return orders.stream().map(this::orderToOrderEvent).collect(Collectors.toList());
     }

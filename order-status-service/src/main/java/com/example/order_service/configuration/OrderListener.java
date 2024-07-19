@@ -1,15 +1,18 @@
-package com.example.order_status_service.configuration;
+package com.example.order_service.configuration;
 
-import com.example.order_status_service.model.OrderEvent;
-import com.example.order_status_service.service.OrderService;
+import com.example.order_service.model.OrderEvent;
+import com.example.order_service.model.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -17,11 +20,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderListener {
 
-    private final OrderService orderService;
+
+    @Value("${app.kafka.orderStatusTopic}")
+    private String topicName;
+    private final KafkaTemplate<String, OrderStatus> kafkaTemplate;
 
 
     @KafkaListener(topics = "${app.kafka.orderTopic}",
-            groupId = "$(app.kafka.orderGroupId)",
+            groupId = "$(app.orderStatusGroupId)",
             containerFactory = "orderConcurrentKafkaListenerContainerFactory")
     public void listen(@Payload OrderEvent order,
                        @Header(value = KafkaHeaders.RECEIVED_KEY, required = false) UUID key,
@@ -32,7 +38,11 @@ public class OrderListener {
         log.info("Received message: {}", order);
         log.info("Key: {}; Partition: {}; Topic: {}; Timestamp: {}", key, partition, topic, timestamp);
 
-        orderService.addOrder(order);
+
+        OrderStatus orderStatus = OrderStatus.builder().status("CREATED").date(Instant.now()).build();
+        kafkaTemplate.send(topicName, orderStatus);
+        log.info("Send message to kafka! \"{}\", {}; Order: {}, {}!",
+                orderStatus.getStatus(), orderStatus.getDate(), order.getProduct(), order.getQuantity());
 
     }
 }

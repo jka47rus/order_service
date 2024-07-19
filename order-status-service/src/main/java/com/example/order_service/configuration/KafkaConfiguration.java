@@ -1,16 +1,19 @@
-package com.example.order_status_service.configuration;
+package com.example.order_service.configuration;
 
-import com.example.order_status_service.model.OrderEvent;
+import com.example.order_service.model.OrderEvent;
+import com.example.order_service.model.OrderStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,4 +48,22 @@ public class KafkaConfiguration {
         factory.setConsumerFactory(orderConsumerFactory);
         return factory;
     }
+
+    @Bean
+    ProducerFactory<String, OrderStatus> orderProducerFactory(ObjectMapper objectMapper) {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new JsonSerializer<>(objectMapper));
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderStatus> kafkaTemplate(ProducerFactory<String, OrderStatus> orderProducerFactory) {
+        return new KafkaTemplate<>(orderProducerFactory);
+    }
+
+
 }
